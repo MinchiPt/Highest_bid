@@ -711,31 +711,61 @@
                 history: []
             };
 
-            // Create HTML for new item
-            const itemHTML = `
-                <div class="list-section" id="section${itemKey}">
-                    <div class="item-header">
-                        <h3>${bidsData[itemKey].description}</h3>
-                    </div>
-                    <div class="form-container">
-                        <form class="bid-form" onsubmit="event.preventDefault(); submitBid('${itemKey}'); return false;">
-                            <input type="text" id="bidder${itemKey}" class="bidder-input" placeholder="Bidder Name" required>
-                            <input type="text" id="rep${itemKey}" class="rep-input" placeholder="Representative" required>
-                            <input type="number" id="amount${itemKey}" class="amount-input" placeholder="Bid Amount" min="0.01" step="0.01" required>
-                            <button type="submit">Submit Bid</button>
-                        </form>
-                    </div>
-                    <div class="bid-history" id="history${itemKey}">
-                        <div class="list-header">
-                            <div>Entry</div>
-                            <div>Bidder</div>
-                            <div>Representative</div>
-                            <div>Amount</div>
-                            <div>Actions</div>
-                        </div>
+            // Create the item container
+            const section = document.createElement('div');
+            section.className = 'list-section';
+            section.id = `section-${itemKey}`;
+            
+            // Item header
+            const header = document.createElement('div');
+            header.className = 'item-header';
+            header.innerHTML = `<h3>${bidsData[itemKey].description}</h3>`;
+            
+            // Form container
+            const formContainer = document.createElement('div');
+            formContainer.className = 'form-container';
+            
+            // Create form
+            const form = document.createElement('form');
+            form.className = 'bid-form';
+            form.dataset.itemId = itemKey;
+            form.setAttribute('novalidate', 'true');
+            form.innerHTML = `
+                <input type="text" class="bidder-input" placeholder="Bidder Name *" required>
+                <input type="text" class="rep-input" placeholder="Representative (Optional)">
+                <input type="number" class="amount-input" placeholder="Bid Amount *" min="0.01" step="0.01" required>
+                <button type="submit">Submit Bid</button>
+            `;
+            
+            // Bid history
+            const history = document.createElement('div');
+            history.className = 'bid-history';
+            history.id = `history${itemKey}`;
+            history.innerHTML = `
+                <div class="list-title">Submitted Bids:</div>
+                <div class="list-content">
+                    <div class="list-header">
+                        <div>Entry</div>
+                        <div>Bidder</div>
+                        <div>Representative</div>
+                        <div>Amount</div>
+                        <div>Actions</div>
                     </div>
                 </div>
+                <div class="bid-list" id="bid-list-${itemKey}"></div>
             `;
+            
+            // Assemble the section
+            formContainer.appendChild(form);
+            section.appendChild(header);
+            section.appendChild(formContainer);
+            section.appendChild(history);
+            
+            // Add to the page
+            document.getElementById('bidSections').appendChild(section);
+            
+            showNotification(`Added Item ${itemId}`);
+            return; // Exit the function early since we're not using itemHTML
 
             // Add new item to the page
             document.getElementById('bidSections').insertAdjacentHTML('beforeend', itemHTML);
@@ -743,43 +773,10 @@
             showNotification(`Added Item ${itemId}`);
         }
 
-        function submitBid(itemKey) {
-            const bidderInput = document.getElementById(`bidder${itemKey}`);
-            const repInput = document.getElementById(`rep${itemKey}`);
-            const amountInput = document.getElementById(`amount${itemKey}`);
-
-            const bidder = bidderInput.value.trim();
-            const rep = repInput.value.trim();
-            const amount = parseFloat(amountInput.value);
-
-            if (!bidder || isNaN(amount) || amount <= 0) {
-                alert('Please enter a valid bidder name and amount');
-                return;
-            }
-
-            const bid = {
-                entry: bidsData[itemKey].history.length + 1,
-                bidder,
-                rep,
-                amount,
-                timestamp: new Date().toISOString()
-            };
-
-            bidsData[itemKey].history.push(bid);
-
-            if (amount > bidsData[itemKey].highestBid) {
-                bidsData[itemKey].highestBid = amount;
-                bidsData[itemKey].highestBidder = bidder;
-            }
-
-            updateDisplay();
-            showNotification('Bid submitted successfully');
-
-            // Clear input fields
-            bidderInput.value = '';
-            repInput.value = '';
-            amountInput.value = '';
-            bidderInput.focus();
+        // This function is no longer used - form submission is now handled by the event delegation
+        // Keeping it for backward compatibility
+        function submitBid() {
+            console.warn('submitBid() is deprecated. Form submission is now handled by event delegation.');
         }
 
 
@@ -809,7 +806,10 @@
         // Handle form submissions using event delegation
         document.addEventListener('submit', function(e) {
             if (e.target && e.target.classList.contains('bid-form')) {
+                // Prevent default form submission and validation
                 e.preventDefault();
+                e.stopPropagation();
+                
                 const form = e.target;
                 const itemId = form.dataset.itemId;
                 
@@ -818,13 +818,38 @@
                 const repInput = form.querySelector('.rep-input');
                 const amountInput = form.querySelector('.amount-input');
                 
-                const bidder = bidderInput.value.trim();
-                const rep = repInput.value.trim();
-                const amount = parseFloat(amountInput.value);
+                // Clear any previous validation messages
+                [bidderInput, amountInput].forEach(input => {
+                    if (input) {
+                        input.setCustomValidity('');
+                    }
+                });
                 
-                if (!bidder || isNaN(amount) || amount <= 0) {
-                    alert('Please enter a valid bidder name and amount');
-                    return;
+                const bidder = bidderInput ? bidderInput.value.trim() : '';
+                const rep = repInput ? repInput.value.trim() : '';
+                const amount = amountInput ? parseFloat(amountInput.value) : NaN;
+                
+                // Custom validation
+                let isValid = true;
+                
+                if (!bidder) {
+                    if (bidderInput) {
+                        bidderInput.setCustomValidity('Bidder name is required');
+                        bidderInput.reportValidity();
+                    }
+                    isValid = false;
+                }
+                
+                if (isNaN(amount) || amount <= 0) {
+                    if (amountInput) {
+                        amountInput.setCustomValidity('Please enter a valid amount');
+                        amountInput.reportValidity();
+                    }
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    return false;
                 }
                 
                 const bid = {
@@ -910,6 +935,7 @@
                 const bidForm = document.createElement('form');
                 bidForm.className = 'bid-form';
                 bidForm.dataset.itemId = itemId;  // Store the item ID as a data attribute
+                bidForm.setAttribute('novalidate', 'true');
                 bidForm.innerHTML = `
                     <input type="text" class="bidder-input" placeholder="Bidder Name *" required>
                     <input type="text" class="rep-input" placeholder="Representative (Optional)">
