@@ -806,6 +806,51 @@
         }
 
 
+        // Handle form submissions using event delegation
+        document.addEventListener('submit', function(e) {
+            if (e.target && e.target.classList.contains('bid-form')) {
+                e.preventDefault();
+                const form = e.target;
+                const itemId = form.dataset.itemId;
+                
+                // Get form inputs
+                const bidderInput = form.querySelector('.bidder-input');
+                const repInput = form.querySelector('.rep-input');
+                const amountInput = form.querySelector('.amount-input');
+                
+                const bidder = bidderInput.value.trim();
+                const rep = repInput.value.trim();
+                const amount = parseFloat(amountInput.value);
+                
+                if (!bidder || isNaN(amount) || amount <= 0) {
+                    alert('Please enter a valid bidder name and amount');
+                    return;
+                }
+                
+                const bid = {
+                    entry: bidsData[itemId].history.length + 1,
+                    bidder,
+                    rep,
+                    amount,
+                    timestamp: new Date().toISOString()
+                };
+                
+                bidsData[itemId].history.push(bid);
+                
+                if (amount > bidsData[itemId].highestBid) {
+                    bidsData[itemId].highestBid = amount;
+                    bidsData[itemId].highestBidder = bidder;
+                }
+                
+                updateDisplay();
+                showNotification('Bid submitted successfully');
+                
+                // Clear form
+                form.reset();
+                bidderInput.focus();
+            }
+        });
+
         // Initialize when page loads
         window.addEventListener('DOMContentLoaded', function () {
             // Initialize empty data structure
@@ -864,11 +909,11 @@
                 // Create bid form
                 const bidForm = document.createElement('form');
                 bidForm.className = 'bid-form';
-                bidForm.onsubmit = `event.preventDefault(); submitBid('${itemId}'); return false;`;
+                bidForm.dataset.itemId = itemId;  // Store the item ID as a data attribute
                 bidForm.innerHTML = `
-                    <input type="text" id="bidder${itemId}" class="bidder-input" placeholder="Bidder Name *" required>
-                    <input type="text" id="rep${itemId}" class="rep-input" placeholder="Representative (Optional)">
-                    <input type="number" id="amount${itemId}" class="amount-input" placeholder="Bid Amount *" min="0.01" step="0.01" required>
+                    <input type="text" class="bidder-input" placeholder="Bidder Name *" required>
+                    <input type="text" class="rep-input" placeholder="Representative (Optional)">
+                    <input type="number" class="amount-input" placeholder="Bid Amount *" min="0.01" step="0.01" required>
                     <button type="submit">Submit Bid</button>
                 `;
 
@@ -1031,80 +1076,8 @@
                 bidsData = newBidsData;
                 nextItemId = maxId + 1;
 
-                // Clear and rebuild the UI
-                const bidSections = document.getElementById('bidSections');
-                bidSections.innerHTML = '';
-
-                // Get sorted IDs to ensure consistent ordering
-                const sortedIds = Object.keys(bidsData).sort((a, b) => parseInt(a) - parseInt(b));
-
-                sortedIds.forEach((id, index) => {
-                    const data = bidsData[id];
-                    // Create the main section element
-                    const section = document.createElement('div');
-                    section.className = 'list-section';
-                    section.id = `section${id}`;
-
-                    // Activate the first item by default
-                    if (index === 0) {
-                        section.classList.add('active');
-                        // Scroll to the first item
-                        setTimeout(() => {
-                            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
-                    }
-
-                    // Create the item header
-                    const header = document.createElement('div');
-                    header.className = 'item-header';
-                    header.innerHTML = `<h3>${data.description}</h3>`;
-
-                    // Create the form container
-                    const formContainer = document.createElement('div');
-                    formContainer.className = 'form-container';
-                    formContainer.innerHTML = `
-                        <form class="bid-form" onsubmit="event.preventDefault(); submitBid('${id}'); return false;">
-                            <input type="text" id="bidder${id}" class="bidder-input" placeholder="Bidder Name" required>
-                            <input type="text" id="rep${id}" class="rep-input" placeholder="Representative" required>
-                            <input type="number" id="amount${id}" class="amount-input" placeholder="Bid Amount" min="0.01" step="0.01" required>
-                            <button type="submit">Submit Bid</button>
-                        </form>`;
-
-                    // Create the bid history section
-                    const history = document.createElement('div');
-                    history.className = 'bid-history';
-                    history.id = `history${id}`;
-                    history.innerHTML = `
-                        <div class="list-title">Submitted Bids:</div>
-                        <div class="list-content">
-                            <div class="list-header">
-                                <div>Entry</div>
-                                <div>Bidder</div>
-                                <div>Representative</div>
-                                <div>Amount</div>
-                                <div>Actions</div>
-                            </div>
-                        </div>
-                        <div class="bid-list" id="bid-list-${id}"></div>`;
-
-                    // Assemble the section
-                    section.appendChild(header);
-                    section.appendChild(formContainer);
-                    section.appendChild(history);
-
-                    // Add click handler for the section
-                    section.addEventListener('click', function (e) {
-                        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) {
-                            return;
-                        }
-                        document.querySelectorAll('.list-section').forEach(s => s.classList.remove('active'));
-                        this.classList.add('active');
-                    });
-
-                    // Add to the DOM
-                    bidSections.appendChild(section);
-
-                }); // Close sortedIds.forEach
+                // Update the display with the new data
+                updateDisplay();
 
                 console.log('XML data loaded successfully');
                 showNotification('XML data loaded successfully');
