@@ -1,0 +1,98 @@
+Private Sub Workbook_Open()
+ 
+End Sub
+ 
+Private Sub Workbook_SheetChange(ByVal Sh As Object, ByVal Target As Range)
+    Dim watchRange As Range
+    Dim highestBid As Double
+    Dim highestBidRow As Long
+   
+    ' Set the range to watch for changes
+    Set watchRange = Range("D11:D200")
+   
+    ' Check if the changed cell is within our watch range
+    If Not Intersect(Target, watchRange) Is Nothing Then
+        ' Disable events to prevent recursive calls
+        Application.EnableEvents = False
+       
+        ' Find the highest bid
+        highestBid = Application.WorksheetFunction.Max(watchRange)
+       
+        ' Find the row of the highest bid
+        highestBidRow = Application.WorksheetFunction.Match(highestBid, watchRange, 0) + 10
+       
+        ' Update the highest bidder information
+        Range("D3").Value = Cells(highestBidRow, 1).Value  ' Index
+        Range("D4").Value = Cells(highestBidRow, 2).Value  ' Name
+        Range("D5").Value = highestBid  ' Price
+       
+        ' Re-enable events
+        Application.EnableEvents = True
+    End If
+   
+    Set watchRange2 = Range("E11:E200")
+   
+    ' Check if the changed cell is within our watch range
+    If Not Intersect(Target, watchRange2) Is Nothing Then
+        ' Disable events to prevent recursive calls
+        Application.EnableEvents = False
+       
+        ' Find the highest bid
+        highestBid = Application.WorksheetFunction.Max(watchRange2)
+       
+        ' Find the row of the highest bid
+        highestBidRow = Application.WorksheetFunction.Match(highestBid, watchRange2, 0) + 10
+       
+        ' Update the highest bidder information
+        Range("E3").Value = Cells(highestBidRow, 1).Value  ' Index
+        Range("E4").Value = Cells(highestBidRow, 2).Value  ' Name
+        Range("E5").Value = highestBid  ' Price
+       
+        ' Re-enable events
+        Application.EnableEvents = True
+    End If
+ 
+Set watchRange3 = Range("F11:F200")
+   
+    ' Check if the changed cell is within our watch range
+    If Not Intersect(Target, watchRange3) Is Nothing Then
+        ' Disable events to prevent recursive calls
+        Application.EnableEvents = False
+       
+        ' Find the highest bid
+        highestBid = Application.WorksheetFunction.Max(watchRange3)
+       
+        ' Find the row of the highest bid
+        highestBidRow = Application.WorksheetFunction.Match(highestBid, watchRange3, 0) + 10
+       
+        ' Update the highest bidder information
+        Range("F3").Value = Cells(highestBidRow, 1).Value  ' Index
+        Range("F4").Value = Cells(highestBidRow, 2).Value  ' Name
+        Range("F5").Value = highestBid  ' Price
+       
+        ' Re-enable events
+        Application.EnableEvents = True
+    End If
+ 
+Set watchRange4 = Range("G11:G200")
+   
+    ' Check if the changed cell is within our watch range
+    If Not Intersect(Target, watchRange4) Is Nothing Then
+        ' Disable events to prevent recursive calls
+        Application.EnableEvents = False
+        
+        ' Find the highest bid
+        highestBid = Application.WorksheetFunction.Max(watchRange4)
+       
+        ' Find the row of the highest bid
+        highestBidRow = Application.WorksheetFunction.Match(highestBid, watchRange4, 0) + 10
+       
+        ' Update the highest bidder information
+        Range("G3").Value = Cells(highestBidRow, 1).Value  ' Index
+        Range("G4").Value = Cells(highestBidRow, 2).Value  ' Name
+        Range("G5").Value = highestBid  ' Price
+       
+        ' Re-enable events
+        Application.EnableEvents = True
+    End If
+End Sub

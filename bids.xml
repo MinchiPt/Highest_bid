@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bids>
+  <item id="1">
+    <description>Item 1</description>
+    <highestBid>10000</highestBid>
+    <highestBidder>isaac</highestBidder>
+    <history>
+      <bid>
+        <entry>1</entry>
+        <bidder>carlos</bidder>
+        <rep>-</rep>
+        <amount>123</amount>
+      </bid>
+      <bid>
+        <entry>2</entry>
+        <bidder>lilly</bidder>
+        <rep>Gab</rep>
+        <amount>8888</amount>
+      </bid>
+      <bid>
+        <entry>3</entry>
+        <bidder>isaac</bidder>
+        <rep>himself</rep>
+        <amount>10000</amount>
+      </bid>
+    </history>
+  </item>
+  <item id="2">
+    <description>Item 2</description>
+    <highestBid>0</highestBid>
+    <highestBidder>-</highestBidder>
+    <history>
+    </history>
+  </item>
+</bids>

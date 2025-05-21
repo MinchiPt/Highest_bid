@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highest Bid Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #eef5ff 100%);
+            padding: 20px;
+            min-height: 100vh;
+            color: #1a2b3c;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .item-header h2 {
+            margin: 0;
+        }
+
+        .edit-btn {
+            font-size: 0.7em;
+            padding: 1px 6px;
+            margin-left: 6px;
+            cursor: pointer;
+            border-radius: 3px;
+            border: none;
+            background: #4CAF50;
+            color: white;
+            transition: all 0.3s;
+            box-shadow: 0 1px 2px rgba(76, 175, 80, 0.2);
+        }
+
+        .edit-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+            margin: 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .xml-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-btn {
+            background: #10b981;
+            font-weight: 600;
+        }
+
+        .add-btn:hover {
+            background: #059669;
+        }
+
+        .bid-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .bid-sections .list-section {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(17, 17, 26, 0.08);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .bid-sections .list-section.active {
+            order: -1;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 1;
+        }
+
+        .bid-section {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(17, 17, 26, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .bid-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .list-title {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .highest-bid {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(167, 243, 208, 0.8);
+        }
+
+        .highest-bid p {
+            margin: 5px 0;
+            color: #2c3e50;
+        }
+
+        .form-container {
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+            margin: 0 0 20px 0;
+            border: none;
+            width: 100%;
+        }
+
+        .bid-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 0;
+            width: 100%;
+            padding: 0;
+        }
+
+        .bid-form input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        .bid-form input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .bid-form button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            margin: 5px 0 0 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .bid-form button:hover {
+            background: #2563eb;
+        }
+
+        input {
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background-color: #f8fafc;
+            color: #1a2b3c;
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            background-color: white;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(30, 41, 59, 0.1);
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.01em;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+            background: #2563eb;
+        }
+
+        .list-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(17, 17, 26, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            margin-bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .list-section.active {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 1;
+        }
+
+        /* Ensure form elements maintain consistent width */
+        .form-container {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .bid-form {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .list-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .list-content {
+            margin: 15px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .list-header {
+            display: grid;
+            grid-template-columns: 100px 200px 200px 150px;
+            gap: 20px;
+            padding: 14px 25px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9em;
+            letter-spacing: 0.02em;
+            font-weight: 500;
+            color: #444;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .list-item {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 12px 25px;
+        }
+
+        .list-entry-number {
+            color: #666;
+            font-family: monospace;
+        }
+
+        .list-amount {
+            font-weight: 500;
+            color: #2E7D32;
+        }
+
+        .list-header,
+        .list-item {
+            display: grid;
+            grid-template-columns: 80px minmax(120px, 1fr) minmax(120px, 1fr) 120px 100px;
+            gap: 10px;
+            padding: 10px 15px;
+            align-items: center;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 25px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            background: white;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95em;
+            align-items: center;
+        }
+
+        .list-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-entry-number {
+            color: #666;
+            font-family: monospace;
+        }
+
+        .list-amount {
+            font-weight: 500;
+            color: #2E7D32;
+        }
+
+        .bid-history {
+            margin-top: 20px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .bid-history-header {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 120px 100px;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 500;
+            color: #444;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .bid-entry {
+            display: grid;
+            grid-template-columns: 80px 150px 150px 120px 100px;
+            gap: 10px;
+            padding: 10px 15px;
+            background: white;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95em;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .bid-entry:first-child {
+            border-left: 3px solid #4CAF50;
+        }
+
+        .bid-entry:last-child {
+            border-bottom: none;
+        }
+
+        .save-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-out;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .list-header {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        .history-entry {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .history-entry:hover {
+            background-color: #f5f5f5;
+        }
+
+        .list-content {
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .list-item {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .list-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .list-entry-number {
+            grid-column: 1;
+        }
+
+        .list-bidder {
+            grid-column: 2;
+        }
+
+        .list-rep {
+            grid-column: 3;
+        }
+
+        .list-amount {
+            grid-column: 4;
+        }
+
+        .bid-actions {
+            grid-column: 5;
+            display: flex;
+            gap: 5px;
+        }
+
+        .bid-edit-btn {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 5px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .bid-edit-btn:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .bid-delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .bid-edit-btn:hover {
+            background-color: #e0a800;
+        }
+
+        .bid-delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .bid-form {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            width: 120px;
+        }
+
+        .bid-history {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .list-header {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 120px 120px;
+            gap: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .list-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 120px 120px;
+            gap: 10px;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .list-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+        }
+    </style>
+    <script>
+        // Global state
+        let bidsData = {};
+        let nextItemId = 1;
+
+
+        function handleXmlFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(e.target.result, 'text/xml');
+                        // Check for parser errors
+                        const parserError = xmlDoc.getElementsByTagName('parsererror');
+                        if (parserError.length > 0) {
+                            throw new Error('Error parsing XML: ' + parserError[0].textContent);
+                        }
+                        loadXmlData(xmlDoc);
+                    } catch (error) {
+                        console.error('Error processing XML:', error);
+                        alert('Error loading XML file: ' + error.message);
+                    }
+                };
+                reader.onerror = (error) => {
+                    console.error('Error reading file:', error);
+                    alert('Error reading file: ' + error.message);
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function saveToXml() {
+            let xmlContent = '<?xml version="1.0" encoding="UTF-8"?>\n<bids>\n';
+
+            for (const [id, data] of Object.entries(bidsData)) {
+                xmlContent += `  <item id="${id}">\n`;
+                xmlContent += `    <description>${data.description}</description>\n`;
+                xmlContent += '    <highest>\n';
+                xmlContent += `      <name>${data.highestBidder}</name>\n`;
+                xmlContent += `      <amount>${data.highestBid}</amount>\n`;
+                xmlContent += '    </highest>\n';
+
+                if (data.history.length > 0) {
+                    xmlContent += '    <history>\n';
+                    for (const bid of data.history) {
+                        xmlContent += '      <bid>\n';
+                        xmlContent += `        <entry>${bid.entry}</entry>\n`;
+                        xmlContent += `        <bidder>${bid.bidder}</bidder>\n`;
+                        xmlContent += `        <rep>${bid.rep}</rep>\n`;
+                        xmlContent += `        <amount>${bid.amount}</amount>\n`;
+                        xmlContent += '      </bid>\n';
+                    }
+                    xmlContent += '    </history>\n';
+                }
+
+                xmlContent += '  </item>\n';
+            }
+
+            xmlContent += '</bids>';
+
+            const blob = new Blob([xmlContent], { type: 'text/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bids.xml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-container">
+            <h1>Highest Bid Tracker</h1>
+            <div class="controls">
+                <button onclick="addNewItem()" class="add-btn">Add New Item</button>
+                <div class="xml-controls">
+                    <input type="file" id="xmlFile" accept=".xml" style="display: none"
+                        onchange="handleXmlFileSelect(event)" />
+                    <button onclick="document.getElementById('xmlFile').click()">Load XML</button>
+                    <button onclick="saveToXml()">Save XML</button>
+                </div>
+            </div>
+        </div>
+        <div id="bidSections" class="bid-sections"></div>
+    </div>
+
+    <script>
+        // Initialize state
+        if (!window.bidsData) {
+            window.bidsData = {};
+            window.nextItemId = 1;
+        }
+
+        function addNewItem() {
+            const itemId = nextItemId++;
+            const itemKey = itemId.toString();
+
+            bidsData[itemKey] = {
+                highestBid: 0,
+                highestBidder: '-',
+                description: `Item ${itemId}`,
+                history: []
+            };
+
+            // Create HTML for new item
+            const itemHTML = `
+                <div class="list-section" id="section${itemKey}">
+                    <div class="item-header">
+                        <h3>${bidsData[itemKey].description}</h3>
+                    </div>
+                    <div class="form-container">
+                        <form class="bid-form" onsubmit="event.preventDefault(); submitBid('${itemKey}'); return false;">
+                            <input type="text" id="bidder${itemKey}" class="bidder-input" placeholder="Bidder Name" required>
+                            <input type="text" id="rep${itemKey}" class="rep-input" placeholder="Representative" required>
+                            <input type="number" id="amount${itemKey}" class="amount-input" placeholder="Bid Amount" min="0.01" step="0.01" required>
+                            <button type="submit">Submit Bid</button>
+                        </form>
+                    </div>
+                    <div class="bid-history" id="history${itemKey}">
+                        <div class="list-header">
+                            <div>Entry</div>
+                            <div>Bidder</div>
+                            <div>Representative</div>
+                            <div>Amount</div>
+                            <div>Actions</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add new item to the page
+            document.getElementById('bidSections').insertAdjacentHTML('beforeend', itemHTML);
+
+            showNotification(`Added Item ${itemId}`);
+        }
+
+        function submitBid(itemKey) {
+            const bidderInput = document.getElementById(`bidder${itemKey}`);
+            const repInput = document.getElementById(`rep${itemKey}`);
+            const amountInput = document.getElementById(`amount${itemKey}`);
+
+            const bidder = bidderInput.value.trim();
+            const rep = repInput.value.trim();
+            const amount = parseFloat(amountInput.value);
+
+            if (!bidder || !rep || isNaN(amount) || amount <= 0) {
+                alert('Please fill in all fields with valid values');
+                return;
+            }
+
+            const bid = {
+                entry: bidsData[itemKey].history.length + 1,
+                bidder,
+                rep,
+                amount,
+                timestamp: new Date().toISOString()
+            };
+
+            bidsData[itemKey].history.push(bid);
+
+            if (amount > bidsData[itemKey].highestBid) {
+                bidsData[itemKey].highestBid = amount;
+                bidsData[itemKey].highestBidder = bidder;
+            }
+
+            updateDisplay();
+            showNotification('Bid submitted successfully');
+
+            // Clear input fields
+            bidderInput.value = '';
+            repInput.value = '';
+            amountInput.value = '';
+            bidderInput.focus();
+        }
+
+
+
+        // Handle click on bidding items
+        function handleItemClick(event) {
+            // Don't trigger if clicking on form elements
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON' ||
+                event.target.closest('form') || event.target.closest('.bid-actions')) {
+                return;
+            }
+
+            const section = event.currentTarget;
+            const allSections = document.querySelectorAll('.list-section');
+
+            // Toggle active state
+            allSections.forEach(s => {
+                if (s === section) {
+                    s.classList.toggle('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        }
+
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', function () {
+            // Initialize empty data structure
+            bidsData = {};
+            document.getElementById('bidSections').innerHTML = '';
+            nextItemId = 1;
+
+            // Add first item automatically
+            addNewItem();
+
+            // Add click event delegation for all items
+            document.getElementById('bidSections').addEventListener('click', function (event) {
+                const section = event.target.closest('.list-section');
+                if (section) {
+                    handleItemClick({ target: event.target, currentTarget: section });
+                }
+            });
+        });
+
+
+
+        // XML-related functions
+        function updateDisplay() {
+            // Clear existing bid sections
+            const bidSections = document.getElementById('bidSections');
+            bidSections.innerHTML = '';
+
+            // Sort items by ID for consistent ordering
+            const sortedIds = Object.keys(bidsData).sort((a, b) => parseInt(a) - parseInt(b));
+
+            sortedIds.forEach((itemId, index) => {
+                const item = bidsData[itemId];
+                const section = document.createElement('div');
+                section.className = 'bid-section' + (index === 0 ? ' active' : '');
+                section.id = `section-${itemId}`;
+
+                // Create item header
+                const header = document.createElement('div');
+                header.className = 'item-header';
+                header.innerHTML = `
+                    <h2>
+                        <span id="description${itemId}">${item.description}</span>
+                        <button class="edit-btn" onclick="editDescription('${itemId}')">Edit</button>
+                    </h2>
+                `;
+
+                // Create highest bid display
+                const highestBid = document.createElement('div');
+                highestBid.className = 'highest-bid';
+                highestBid.innerHTML = `
+                    <p>Highest Bidder: <span id="bidder${itemId}">${item.highestBidder}</span></p>
+                    <p>Amount: $<span id="bidAmount${itemId}">${item.highestBid.toFixed(2)}</span></p>
+                `;
+
+
+                // Create bid form
+                const bidForm = document.createElement('form');
+                bidForm.className = 'bid-form';
+                bidForm.onsubmit = `event.preventDefault(); submitBid('${itemId}'); return false;`;
+                bidForm.innerHTML = `
+                    <input type="text" id="bidder${itemId}" class="bidder-input" placeholder="Bidder Name" required>
+                    <input type="text" id="rep${itemId}" class="rep-input" placeholder="Representative" required>
+                    <input type="number" id="amount${itemId}" class="amount-input" placeholder="Bid Amount" min="0.01" step="0.01" required>
+                    <button type="submit">Submit Bid</button>
+                `;
+
+                // Create bid history container
+                const historyContainer = document.createElement('div');
+                historyContainer.className = 'bid-history';
+                historyContainer.id = `history-${itemId}`;
+                historyContainer.innerHTML = `
+                    <div class="list-title">Submitted Bids:</div>
+                    <div class="list-content">
+                        <div class="list-header">
+                            <div>Entry</div>
+                            <div>Bidder</div>
+                            <div>Representative</div>
+                            <div>Amount</div>
+                            <div>Actions</div>
+                        </div>
+                    </div>
+                    <div class="bid-list" id="bid-list-${itemId}"></div>
+                `;
+
+                // Add bid history if it exists
+                const bidList = document.createElement('div');
+                bidList.className = 'bid-list';
+                bidList.id = `bid-list-${itemId}`;
+                
+                if (item.history && item.history.length > 0) {
+                    const sortedHistory = [...item.history].sort((a, b) => b.entry - a.entry);
+                    sortedHistory.forEach(bid => {
+                        const bidElement = document.createElement('div');
+                        bidElement.className = 'list-item';
+                        bidElement.innerHTML = `
+                            <div class="list-entry-number">${bid.entry}</div>
+                            <div class="list-bidder">${bid.bidder}</div>
+                            <div class="list-rep">${bid.rep}</div>
+                            <div class="list-amount">$${bid.amount.toFixed(2)}</div>
+                            <div class="list-actions">
+                                <button class="bid-edit-btn" onclick="editBid('${itemId}', ${bid.entry})">Edit</button>
+                                <button class="bid-delete-btn" onclick="deleteBid('${itemId}', ${bid.entry})">Del</button>
+                            </div>
+                        `;
+                        bidList.appendChild(bidElement);
+                    });
+                }
+
+                // Assemble the section
+                section.appendChild(header);
+                section.appendChild(highestBid);
+                section.appendChild(bidForm);
+                historyContainer.querySelector('.list-content').appendChild(bidList);
+                section.appendChild(historyContainer);
+                
+                // Add click handler for the section
+                section.addEventListener('click', function (e) {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                        return;
+                    }
+                    document.querySelectorAll('.bid-section').forEach(s => s.classList.remove('active'));
+                    this.classList.add('active');
+                });
+
+                // Add to the DOM
+                bidSections.appendChild(section);
+            });
+        }
+
+        function editDescription(itemId) {
+            const currentDesc = bidsData[itemId].description;
+            const newDesc = prompt('Enter new description:', currentDesc);
+
+            if (newDesc !== null && newDesc.trim() !== '') {
+                bidsData[itemId].description = newDesc.trim();
+                updateDisplay();
+                showNotification('Description updated successfully');
+            }
+        }
+
+        function loadXmlData(xmlDoc) {
+            try {
+                console.log('Loading XML data...');
+                // Create a temporary object to store the new data
+                const newBidsData = {};
+                let maxId = 0;
+
+                const items = xmlDoc.getElementsByTagName('item');
+                if (!items || items.length === 0) {
+                    throw new Error('No items found in XML file');
+                }
+
+                // First pass: load all data into bidsData
+                for (const item of items) {
+                    const id = item.getAttribute('id');
+                    const description = item.getElementsByTagName('description')[0];
+                    if (!description) {
+                        console.warn(`Description missing for item ${id}, skipping...`);
+                        continue;
+                    }
+
+                    newBidsData[id] = {
+                        description: description.textContent,
+                        highestBid: 0,
+                        highestBidder: '-',
+                        history: []
+                    };
+
+                    const highest = item.getElementsByTagName('highest')[0];
+                    if (highest) {
+                        const nameEl = highest.getElementsByTagName('name')[0];
+                        const amountEl = highest.getElementsByTagName('amount')[0];
+                        if (nameEl && amountEl) {
+                            newBidsData[id].highestBidder = nameEl.textContent;
+                            newBidsData[id].highestBid = parseFloat(amountEl.textContent) || 0;
+                        }
+                    }
+
+                    // Load history and track the highest bid
+                    const history = item.getElementsByTagName('history')[0];
+                    if (history) {
+                        const bids = history.getElementsByTagName('bid');
+                        let highestBidInHistory = 0;
+                        let highestBidderInHistory = '-';
+
+                        for (const bid of bids) {
+                            const entry = bid.getElementsByTagName('entry')[0];
+                            const bidder = bid.getElementsByTagName('bidder')[0];
+                            const rep = bid.getElementsByTagName('rep')[0];
+                            const amount = bid.getElementsByTagName('amount')[0];
+
+                            if (entry && bidder && rep && amount) {
+                                const bidAmount = parseFloat(amount.textContent) || 0;
+                                newBidsData[id].history.push({
+                                    entry: parseInt(entry.textContent),
+                                    bidder: bidder.textContent,
+                                    rep: rep.textContent,
+                                    amount: bidAmount
+                                });
+
+                                // Update highest bid if this is higher
+                                if (bidAmount > highestBidInHistory) {
+                                    highestBidInHistory = bidAmount;
+                                    highestBidderInHistory = bidder.textContent;
+                                }
+                            }
+                        }
+
+                        // Update highest bid if necessary
+                        if (highestBidInHistory > newBidsData[id].highestBid) {
+                            newBidsData[id].highestBid = highestBidInHistory;
+                            newBidsData[id].highestBidder = highestBidderInHistory;
+                        }
+                    }
+
+                    // Update maxId
+                    if (parseInt(id) > maxId) {
+                        maxId = parseInt(id);
+                    }
+                }
+
+                // Update the global state
+                bidsData = newBidsData;
+                nextItemId = maxId + 1;
+
+                // Clear and rebuild the UI
+                const bidSections = document.getElementById('bidSections');
+                bidSections.innerHTML = '';
+
+                // Get sorted IDs to ensure consistent ordering
+                const sortedIds = Object.keys(bidsData).sort((a, b) => parseInt(a) - parseInt(b));
+
+                sortedIds.forEach((id, index) => {
+                    const data = bidsData[id];
+                    // Create the main section element
+                    const section = document.createElement('div');
+                    section.className = 'list-section';
+                    section.id = `section${id}`;
+
+                    // Activate the first item by default
+                    if (index === 0) {
+                        section.classList.add('active');
+                        // Scroll to the first item
+                        setTimeout(() => {
+                            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                    }
+
+                    // Create the item header
+                    const header = document.createElement('div');
+                    header.className = 'item-header';
+                    header.innerHTML = `<h3>${data.description}</h3>`;
+
+                    // Create the form container
+                    const formContainer = document.createElement('div');
+                    formContainer.className = 'form-container';
+                    formContainer.innerHTML = `
+                        <form class="bid-form" onsubmit="event.preventDefault(); submitBid('${id}'); return false;">
+                            <input type="text" id="bidder${id}" class="bidder-input" placeholder="Bidder Name" required>
+                            <input type="text" id="rep${id}" class="rep-input" placeholder="Representative" required>
+                            <input type="number" id="amount${id}" class="amount-input" placeholder="Bid Amount" min="0.01" step="0.01" required>
+                            <button type="submit">Submit Bid</button>
+                        </form>`;
+
+                    // Create the bid history section
+                    const history = document.createElement('div');
+                    history.className = 'bid-history';
+                    history.id = `history${id}`;
+                    history.innerHTML = `
+                        <div class="list-title">Submitted Bids:</div>
+                        <div class="list-content">
+                            <div class="list-header">
+                                <div>Entry</div>
+                                <div>Bidder</div>
+                                <div>Representative</div>
+                                <div>Amount</div>
+                                <div>Actions</div>
+                            </div>
+                        </div>
+                        <div class="bid-list" id="bid-list-${id}"></div>`;
+
+                    // Assemble the section
+                    section.appendChild(header);
+                    section.appendChild(formContainer);
+                    section.appendChild(history);
+
+                    // Add click handler for the section
+                    section.addEventListener('click', function (e) {
+                        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                            return;
+                        }
+                        document.querySelectorAll('.list-section').forEach(s => s.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+
+                    // Add to the DOM
+                    bidSections.appendChild(section);
+
+                    // Add bid history if it exists
+                    const bidList = document.getElementById(`bid-list-${id}`);
+                    if (data.history && data.history.length > 0) {
+                        const sortedHistory = [...data.history].sort((a, b) => b.entry - a.entry);
+                        sortedHistory.forEach(bid => {
+                            const bidElement = document.createElement('div');
+                            bidElement.className = 'list-item';
+                            bidElement.innerHTML = `
+                                <div class="list-entry-number">${bid.entry}</div>
+                                <div class="list-bidder">${bid.bidder}</div>
+                                <div class="list-rep">${bid.rep}</div>
+                                <div class="list-amount">$${bid.amount.toFixed(2)}</div>
+                                <div class="list-actions">
+                                    <button class="bid-edit-btn" onclick="editBid('${id}', ${bid.entry})">Edit</button>
+                                    <button class="bid-delete-btn" onclick="deleteBid('${id}', ${bid.entry}')">Del</button>
+                                </div>`;
+                            bidList.appendChild(bidElement);
+                        });
+                    }
+                }); // Close sortedIds.forEach
+
+                console.log('XML data loaded successfully');
+                showNotification('XML data loaded successfully');
+            } catch (error) {
+                console.error('Error loading XML:', error);
+                alert('Error loading XML file: ' + (error.message || 'Unknown error'));
+            }
+        }
+
+        function editBid(itemKey, entry) {
+            const bid = (bidsData[itemKey]?.history || []).find(b => b.entry === entry || b.entry === parseInt(entry));
+            if (!bid) return;
+
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'white';
+            modalContent.style.padding = '20px';
+            modalContent.style.borderRadius = '8px';
+            modalContent.style.width = '400px';
+            modalContent.style.maxWidth = '90%';
+
+            // Create form
+            modalContent.innerHTML = `
+                <h3 style="margin-top: 0; color: #2c3e50;">Edit Bid #${entry}</h3>
+                <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <label for="editBidder" style="display: block; margin-bottom: 5px; font-weight: 500;">Bidder:</label>
+                        <input type="text" id="editBidder" value="${bid.bidder}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label for="editRep" style="display: block; margin-bottom: 5px; font-weight: 500;">Representative:</label>
+                        <input type="text" id="editRep" value="${bid.rep}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label for="editAmount" style="display: block; margin-bottom: 5px; font-weight: 500;">Amount ($):</label>
+                        <input type="number" id="editAmount" value="${bid.amount}" min="0.01" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button id="cancelEdit" style="padding: 8px 16px; background: #e0e0e0; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button id="saveEdit" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Save Changes</button>
+                </div>
+            `;
+
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+
+            // Handle save
+            document.getElementById('saveEdit').addEventListener('click', function () {
+                const newBidder = document.getElementById('editBidder').value.trim();
+                const newRep = document.getElementById('editRep').value.trim();
+                const newAmount = parseFloat(document.getElementById('editAmount').value);
+
+                if (!newBidder || !newRep || isNaN(newAmount) || newAmount <= 0) {
+                    alert('Please fill in all fields with valid values');
+                    return;
+                }
+
+                // Update the bid
+                bid.bidder = newBidder;
+                bid.rep = newRep;
+                bid.amount = newAmount;
+
+                // Update highest bid if necessary
+                if (newAmount > bidsData[itemKey].highestBid) {
+                    bidsData[itemKey].highestBid = newAmount;
+                    bidsData[itemKey].highestBidder = newBidder;
+                }
+
+                // Remove modal and update display
+                document.body.removeChild(modal);
+                document.body.style.overflow = '';
+                updateDisplay();
+                showNotification('Bid updated successfully');
+            });
+
+            // Handle cancel
+            document.getElementById('cancelEdit').addEventListener('click', function () {
+                document.body.removeChild(modal);
+                document.body.style.overflow = '';
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Focus on first input
+            document.getElementById('editBidder').focus();
+        }
+
+        function deleteBid(itemKey, entry) {
+            if (!confirm('Are you sure you want to delete this bid?')) return;
+
+            const bidIndex = bidsData[itemKey].history.findIndex(b =>
+                b.entry === entry || b.entry === parseInt(entry)
+            );
+            if (bidIndex === -1) return;
+
+            const deletedBid = bidsData[itemKey].history.splice(bidIndex, 1)[0];
+
+            // If we deleted the highest bid, we need to find the new highest bid
+            if (deletedBid.amount === bidsData[itemKey].highestBid) {
+                const newHighest = bidsData[itemKey].history.reduce((max, bid) =>
+                    bid.amount > max.amount ? bid : max
+                    , { amount: 0, bidder: 'No bids' });
+
+                bidsData[itemKey].highestBid = newHighest.amount;
+                bidsData[itemKey].highestBidder = newHighest.bidder;
+            }
+
+            updateDisplay();
+            showNotification('Bid deleted successfully');
+        }
+
+        function showNotification(message) {
+            try {
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                // Add fade-in animation
+                notification.style.animation = 'fadeIn 0.3s ease-out';
+
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'fadeOut 0.3s ease-in';
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            } catch (error) {
+                console.error('Error showing notification:', error);
+                // Fallback to alert if there's an error
+                alert(message);
+            }
+        }
+
+    </script>
+</body>
+
+</html>
