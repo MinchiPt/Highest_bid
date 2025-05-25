@@ -2,8 +2,10 @@
 <bids>
   <item id="1">
     <description>Item 1</description>
-    <highestBid>10000</highestBid>
-    <highestBidder>isaac</highestBidder>
+    <highest>
+      <name>qqq</name>
+      <amount>88899</amount>
+    </highest>
     <history>
       <bid>
         <entry>1</entry>
@@ -23,13 +25,45 @@
         <rep>himself</rep>
         <amount>10000</amount>
       </bid>
+      <bid>
+        <entry>234324</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>40000</amount>
+      </bid>
+      <bid>
+        <entry>3245904</entry>
+        <bidder>qqq</bidder>
+        <rep></rep>
+        <amount>88899</amount>
+      </bid>
     </history>
   </item>
   <item id="2">
     <description>Item 2</description>
-    <highestBid>0</highestBid>
-    <highestBidder>-</highestBidder>
+    <highest>
+      <name>yyy</name>
+      <amount>80000</amount>
+    </highest>
     <history>
+      <bid>
+        <entry>969069</entry>
+        <bidder>yyy</bidder>
+        <rep></rep>
+        <amount>80000</amount>
+      </bid>
+      <bid>
+        <entry>NaN</entry>
+        <bidder>hhh</bidder>
+        <rep></rep>
+        <amount>79999</amount>
+      </bid>
+      <bid>
+        <entry>iii34543</entry>
+        <bidder>iii</bidder>
+        <rep></rep>
+        <amount>40000</amount>
+      </bid>
     </history>
   </item>
 </bids>
