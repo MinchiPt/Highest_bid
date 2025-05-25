@@ -292,7 +292,7 @@
 
         .list-header {
             display: grid;
-            grid-template-columns: 100px 200px 200px 150px;
+            grid-template-columns: 100px 250px 200px 150px;
             gap: 20px;
             padding: 14px 25px;
             background: #f8fafc;
@@ -560,18 +560,18 @@
 
         .list-header {
             display: grid;
-            grid-template-columns: 80px 1fr 1fr 120px 120px;
-            gap: 10px;
-            padding: 10px;
+            grid-template-columns: 100px 200px 200px 150px 120px;
+            gap: 20px;
+            padding: 14px 25px;
             background-color: #f8f9fa;
             font-weight: bold;
         }
 
         .list-item {
             display: grid;
-            grid-template-columns: 80px 1fr 1fr 120px 120px;
-            gap: 10px;
-            padding: 10px;
+            grid-template-columns: 100px 200px 200px 150px 120px;
+            gap: 20px;
+            padding: 10px 25px;
             border-top: 1px solid #ddd;
         }
 
@@ -609,6 +609,19 @@
         // Global state
         let bidsData = {};
         let nextItemId = 1;
+        let saveReminderInterval;
+
+        // Function to show save reminder
+        function setupSaveReminder() {
+            // Clear any existing interval
+            if (saveReminderInterval) {
+                clearInterval(saveReminderInterval);
+            }
+            // Set up new interval (5 minutes = 300000 milliseconds)
+            saveReminderInterval = setInterval(() => {
+                showNotification('💾 Remember to save your work!');
+            }, 5 * 60 * 1000);
+        }
 
 
         function handleXmlFileSelect(event) {
@@ -950,6 +963,9 @@
             bidsData = {};
             document.getElementById('bidSections').innerHTML = '';
             nextItemId = 1;
+            
+            // Start the save reminder
+            setupSaveReminder();
 
             // Add first item automatically
             addNewItem();
