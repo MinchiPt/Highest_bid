@@ -731,9 +731,10 @@
             form.dataset.itemId = itemKey;
             form.setAttribute('novalidate', 'true');
             form.innerHTML = `
+                <input type="text" class="entry-input" placeholder="Entry Number *" required>
                 <input type="text" class="bidder-input" placeholder="Bidder Name *" required>
                 <input type="text" class="rep-input" placeholder="Representative (Optional)">
-                <input type="number" class="amount-input" placeholder="Bid Amount *" min="0.01" step="0.01" required>
+                <input type="number" class="amount-input" placeholder="Bid Amount *" min="0.01" step="0.01" required inputmode="decimal">
                 <button type="submit">Submit Bid</button>
             `;
             
@@ -815,17 +816,19 @@
                 
                 // Get form inputs
                 const bidderInput = form.querySelector('.bidder-input');
+                const entryInput = form.querySelector('.entry-input');
                 const repInput = form.querySelector('.rep-input');
                 const amountInput = form.querySelector('.amount-input');
                 
                 // Clear any previous validation messages
-                [bidderInput, amountInput].forEach(input => {
+                [bidderInput, entryInput, amountInput].forEach(input => {
                     if (input) {
                         input.setCustomValidity('');
                     }
                 });
                 
                 const bidder = bidderInput ? bidderInput.value.trim() : '';
+                const entry = entryInput ? entryInput.value.trim() : '';
                 const rep = repInput ? repInput.value.trim() : '';
                 const amount = amountInput ? parseFloat(amountInput.value) : NaN;
                 
@@ -836,6 +839,14 @@
                     if (bidderInput) {
                         bidderInput.setCustomValidity('Bidder name is required');
                         bidderInput.reportValidity();
+                    }
+                    isValid = false;
+                }
+                
+                if (!entry) {
+                    if (entryInput) {
+                        entryInput.setCustomValidity('Entry number is required');
+                        entryInput.reportValidity();
                     }
                     isValid = false;
                 }
@@ -853,7 +864,7 @@
                 }
                 
                 const bid = {
-                    entry: bidsData[itemId].history.length + 1,
+                    entry: entry,
                     bidder,
                     rep,
                     amount,
@@ -873,6 +884,8 @@
                 // Clear form
                 form.reset();
                 bidderInput.focus();
+                // Set focus to bidder input
+                if (bidderInput) bidderInput.focus();
             }
         });
 
@@ -927,7 +940,7 @@
                 highestBid.className = 'highest-bid';
                 highestBid.innerHTML = `
                     <p>Highest Bidder: <span id="bidder${itemId}">${item.highestBidder}</span></p>
-                    <p>Amount: $<span id="bidAmount${itemId}">${item.highestBid.toFixed(2)}</span></p>
+                    <p>Amount: $<span id="bidAmount${itemId}">${item.highestBid.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></p>
                 `;
 
 
@@ -937,9 +950,10 @@
                 bidForm.dataset.itemId = itemId;  // Store the item ID as a data attribute
                 bidForm.setAttribute('novalidate', 'true');
                 bidForm.innerHTML = `
+                    <input type="text" class="entry-input" placeholder="Entry Number *" required>
                     <input type="text" class="bidder-input" placeholder="Bidder Name *" required>
                     <input type="text" class="rep-input" placeholder="Representative (Optional)">
-                    <input type="number" class="amount-input" placeholder="Bid Amount *" min="0.01" step="0.01" required>
+                    <input type="number" class="amount-input" placeholder="Bid Amount *" min="0.01" step="0.01" required inputmode="decimal">
                     <button type="submit">Submit Bid</button>
                 `;
 
@@ -975,7 +989,7 @@
                             <div class="list-entry-number">${bid.entry}</div>
                             <div class="list-bidder">${bid.bidder}</div>
                             <div class="list-rep">${bid.rep}</div>
-                            <div class="list-amount">$${bid.amount.toFixed(2)}</div>
+                            <div class="list-amount">$${bid.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                             <div class="list-actions">
                                 <button class="bid-edit-btn" onclick="editBid('${itemId}', ${bid.entry})">Edit</button>
                                 <button class="bid-delete-btn" onclick="deleteBid('${itemId}', ${bid.entry})">Del</button>
@@ -1143,16 +1157,20 @@
                 <h3 style="margin-top: 0; color: #2c3e50;">Edit Bid #${entry}</h3>
                 <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
                     <div>
-                        <label for="editBidder" style="display: block; margin-bottom: 5px; font-weight: 500;">Bidder:</label>
-                        <input type="text" id="editBidder" value="${bid.bidder}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <label for="editEntry" style="display: block; margin-bottom: 5px; font-weight: 500;">Entry Number: *</label>
+                        <input type="text" id="editEntry" value="${bid.entry}" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label for="editBidder" style="display: block; margin-bottom: 5px; font-weight: 500;">Bidder: *</label>
+                        <input type="text" id="editBidder" value="${bid.bidder}" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     <div>
                         <label for="editRep" style="display: block; margin-bottom: 5px; font-weight: 500;">Representative:</label>
-                        <input type="text" id="editRep" value="${bid.rep}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <input type="text" id="editRep" value="${bid.rep || ''}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     <div>
-                        <label for="editAmount" style="display: block; margin-bottom: 5px; font-weight: 500;">Amount ($):</label>
-                        <input type="number" id="editAmount" value="${bid.amount}" min="0.01" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <label for="editAmount" style="display: block; margin-bottom: 5px; font-weight: 500;">Amount ($): *</label>
+                        <input type="number" id="editAmount" value="${bid.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}" min="0.01" step="0.01" required inputmode="decimal" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; -moz-appearance: textfield;">
                     </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
@@ -1168,16 +1186,18 @@
             // Handle save
             document.getElementById('saveEdit').addEventListener('click', function () {
                 const newBidder = document.getElementById('editBidder').value.trim();
+                const newEntry = document.getElementById('editEntry').value.trim();
                 const newRep = document.getElementById('editRep').value.trim();
                 const newAmount = parseFloat(document.getElementById('editAmount').value);
 
-                if (!newBidder || !newRep || isNaN(newAmount) || newAmount <= 0) {
-                    alert('Please fill in all fields with valid values');
+                if (!newBidder || !newEntry || isNaN(newAmount) || newAmount <= 0) {
+                    alert('Please fill in all required fields with valid values');
                     return;
                 }
 
                 // Update the bid
                 bid.bidder = newBidder;
+                bid.entry = newEntry;
                 bid.rep = newRep;
                 bid.amount = newAmount;
 
