@@ -3,8 +3,8 @@
   <item id="1">
     <description>Item 1</description>
     <highest>
-      <name>qqq</name>
-      <amount>88899</amount>
+      <name>uuu</name>
+      <amount>90000</amount>
     </highest>
     <history>
       <bid>
@@ -37,13 +37,19 @@
         <rep></rep>
         <amount>88899</amount>
       </bid>
+      <bid>
+        <entry>234dsfdcf</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>90000</amount>
+      </bid>
     </history>
   </item>
   <item id="2">
     <description>Item 2</description>
     <highest>
-      <name>yyy</name>
-      <amount>80000</amount>
+      <name>uuu</name>
+      <amount>8677898</amount>
     </highest>
     <history>
       <bid>
@@ -59,10 +65,37 @@
         <amount>79999</amount>
       </bid>
       <bid>
-        <entry>iii34543</entry>
+        <entry>NaN</entry>
         <bidder>iii</bidder>
         <rep></rep>
         <amount>40000</amount>
+      </bid>
+      <bid>
+        <entry>234dsfdcf</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>8677898</amount>
+      </bid>
+    </history>
+  </item>
+  <item id="3">
+    <description>Item 3</description>
+    <highest>
+      <name>uuu</name>
+      <amount>898945</amount>
+    </highest>
+    <history>
+      <bid>
+        <entry>234dsfdcf</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>898945</amount>
+      </bid>
+      <bid>
+        <entry>234dsfdcf</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>43455</amount>
       </bid>
     </history>
   </item>

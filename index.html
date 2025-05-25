@@ -860,8 +860,70 @@
             }
         }
         
+        // Function to confirm if user wants to continue with the same bidder
+        async function confirmContinueWithSameBidder(form, bidder) {
+            if (!bidder) return false;
+            
+            // Create and show modal
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            modal.style.zIndex = '1000';
+
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'white';
+            modalContent.style.padding = '20px';
+            modalContent.style.borderRadius = '8px';
+            modalContent.style.width = '400px';
+            modalContent.style.maxWidth = '90%';
+            modalContent.innerHTML = `
+                <h3 style="margin-top: 0; color: #2c3e50;">Continue with same bidder?</h3>
+                <p>Do you want to enter another bid for ${bidder}?</p>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button id="continueNo" style="padding: 8px 16px; background: #e0e0e0; border: none; border-radius: 4px; cursor: pointer;">No, Clear All</button>
+                    <button id="continueYes" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Yes, Keep Bidder</button>
+                </div>
+            `;
+
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            // Return a promise that resolves with the user's choice
+            return new Promise((resolve) => {
+                document.getElementById('continueYes').addEventListener('click', function() {
+                    document.body.removeChild(modal);
+                    document.body.style.overflow = '';
+                    resolve(true);
+                });
+
+                document.getElementById('continueNo').addEventListener('click', function() {
+                    document.body.removeChild(modal);
+                    document.body.style.overflow = '';
+                    resolve(false);
+                });
+
+                // Close modal when clicking outside
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        document.body.removeChild(modal);
+                        document.body.style.overflow = '';
+                        resolve(false);
+                    }
+                });
+            });
+        }
+
         // Handle form submissions using event delegation
-        document.addEventListener('submit', function(e) {
+        document.addEventListener('submit', async function(e) {
             if (e.target && e.target.classList.contains('bid-form')) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -880,17 +942,6 @@
                 const bidder = form.querySelector('.bidder-input').value.trim();
                 const rep = form.querySelector('.rep-input').value.trim();
                 const amount = parseFloat(form.querySelector('.amount-input').value);
-                
-                // Clear form if it's the main form
-                if (form.id === 'mainBidForm') {
-                    form.reset();
-                    // Reset the item selection to the same item for quick multiple bids
-                    if (itemId) {
-                        setTimeout(() => {
-                            document.getElementById('itemSelect').value = itemId;
-                        }, 0);
-                    }
-                }
                 
                 // Clear any previous validation messages
                 [form.querySelector('.bidder-input'), form.querySelector('.entry-input'), form.querySelector('.amount-input')].forEach(input => {
@@ -948,12 +999,112 @@
                 showNotification(`Bid of $${amount} submitted for ${bidsData[itemId].description}`);
                 updateDisplay();
                 
-                // Update the item dropdown in case descriptions changed
-                updateItemDropdown();
-                // Set focus to bidder input for the next bid
-                if (form.querySelector('.bidder-input')) {
-                    form.querySelector('.bidder-input').focus();
+                // Ask if user wants to continue with same bidder
+                const continueWithSameBidder = await confirmContinueWithSameBidder(form, bidder);
+                
+                // Clear form based on user's choice
+                if (form.id === 'mainBidForm') {
+                    if (continueWithSameBidder) {
+                        // Only clear amount field, keep entry, bidder and rep
+                        form.querySelector('.amount-input').value = '';
+                        form.querySelector('.amount-input').focus();
+                    } else {
+                        // Clear all fields
+                        form.reset();
+                        // Reset the item selection to the same item for quick multiple bids
+                        if (itemId) {
+                            setTimeout(() => {
+                                document.getElementById('itemSelect').value = itemId;
+                                form.querySelector('.entry-input').focus();
+                            }, 0);
+                        }
+                    }
                 }
+            }
+        });
+
+        // Function to handle entry number lookup
+        async function handleEntryNumberLookup(entryInput) {
+            const entryNumber = entryInput.value.trim();
+            
+            if (entryNumber) {
+                try {
+                    const bidderInfo = await loadBidderByEntry(entryNumber);
+                    if (bidderInfo) {
+                        const form = entryInput.closest('form');
+                        const bidderInput = form.querySelector('.bidder-input');
+                        const repInput = form.querySelector('.rep-input');
+                        
+                        if (bidderInput && !bidderInput.value) {
+                            bidderInput.value = bidderInfo.bidder;
+                        }
+                        
+                        if (repInput && !repInput.value && bidderInfo.rep) {
+                            repInput.value = bidderInfo.rep;
+                        }
+                        
+                        // Focus on amount field for quick entry
+                        const amountInput = form.querySelector('.amount-input');
+                        if (amountInput) {
+                            amountInput.focus();
+                        }
+                        return true; // Found matching entry
+                    }
+                } catch (error) {
+                    console.error('Error loading bidder info:', error);
+                }
+            }
+            return false; // No matching entry or error occurred
+        }
+
+        // Add event listeners for entry number input
+        document.addEventListener('input', async function(e) {
+            if (e.target && e.target.classList.contains('entry-input')) {
+                await handleEntryNumberLookup(e.target);
+            }
+        });
+
+        // Handle both Enter and Tab key presses
+        document.addEventListener('keydown', async function(e) {
+            const entryInput = e.target;
+            if (!entryInput || !entryInput.classList.contains('entry-input')) {
+                return;
+            }
+
+            // Check for Enter or Tab key
+            if (e.key === 'Enter' || e.key === 'Tab') {
+                // If Tab is pressed without any value, let it proceed normally
+                if (e.key === 'Tab' && !entryInput.value.trim()) {
+                    return;
+                }
+
+                // For Enter key, prevent default form submission
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+
+                console.log('Key pressed:', e.key, 'Value:', entryInput.value);
+                const entryFound = await handleEntryNumberLookup(entryInput);
+                console.log('Entry lookup result:', entryFound);
+                
+                if (entryFound) {
+                    // If entry was found, focus on amount field
+                    const form = entryInput.closest('form');
+                    const amountInput = form.querySelector('.amount-input');
+                    if (amountInput) {
+                        // Small timeout to ensure the focus happens after the current event loop
+                        setTimeout(() => amountInput.focus(), 10);
+                    }
+                } else if (e.key === 'Enter') {
+                    // Only move to bidder field on Enter if no match found
+                    const form = entryInput.closest('form');
+                    const bidderInput = form.querySelector('.bidder-input');
+                    if (bidderInput) {
+                        // Small timeout to ensure the focus happens after the current event loop
+                        setTimeout(() => bidderInput.focus(), 10);
+                    }
+                }
+                // For Tab key, let the default behavior handle the focus change
             }
         });
 
@@ -1298,8 +1449,8 @@
                 }
             });
 
-            // Focus on first input
-            document.getElementById('editBidder').focus();
+            // Focus on entry input
+            document.getElementById('editEntry').focus();
         }
 
         function deleteBid(itemKey, entry) {
@@ -1352,6 +1503,43 @@
             }
         }
 
+        /**
+         * Loads bidder information by entry number from bids.xml
+         * @param {string} entryNumber - The entry number to search for
+         * @returns {Promise<{bidder: string, rep: string}|null>} - Object containing bidder and rep, or null if not found
+         */
+        async function loadBidderByEntry(entryNumber) {
+            try {
+                // Fetch the bids.xml file
+                const response = await fetch('bids.xml');
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                
+                // Find all bid elements
+                const bids = xmlDoc.getElementsByTagName('bid');
+                
+                // Search for the entry
+                for (let i = 0; i < bids.length; i++) {
+                    const entry = bids[i].getElementsByTagName('entry')[0]?.textContent;
+                    if (entry === entryNumber) {
+                        const bidder = bids[i].getElementsByTagName('bidder')[0]?.textContent || '';
+                        const repElem = bids[i].getElementsByTagName('rep')[0];
+                        const rep = repElem ? (repElem.textContent || '') : '';
+                        
+                        return {
+                            bidder: bidder.trim(),
+                            rep: rep.trim()
+                        };
+                    }
+                }
+                
+                return null; // Entry not found
+            } catch (error) {
+                console.error('Error loading bidder information:', error);
+                return null;
+            }
+        }
     </script>
 </body>
 
