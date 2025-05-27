@@ -82,6 +82,36 @@
         <rep></rep>
         <amount>8677898</amount>
       </bid>
+      <bid>
+        <entry>eee444</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>867898</amount>
+      </bid>
+      <bid>
+        <entry>ttt666</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>123232</amount>
+      </bid>
+      <bid>
+        <entry>iii666</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>8797</amount>
+      </bid>
+      <bid>
+        <entry>qqq444</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>747383</amount>
+      </bid>
+      <bid>
+        <entry>ooo999</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>63525</amount>
+      </bid>
     </history>
   </item>
   <item id="3">
@@ -102,6 +132,36 @@
         <bidder>uuu</bidder>
         <rep></rep>
         <amount>43455</amount>
+      </bid>
+<bid>
+        <entry>969069</entry>
+        <bidder>yyy</bidder>
+        <rep></rep>
+        <amount>80000</amount>
+      </bid>
+      <bid>
+        <entry>NaN</entry>
+        <bidder>hhh</bidder>
+        <rep></rep>
+        <amount>79999</amount>
+      </bid>
+      <bid>
+        <entry>NaN</entry>
+        <bidder>iii</bidder>
+        <rep></rep>
+        <amount>40000</amount>
+      </bid>
+      <bid>
+        <entry>234</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>8677898</amount>
+      </bid>
+      <bid>
+        <entry>eee444</entry>
+        <bidder>uuu</bidder>
+        <rep></rep>
+        <amount>867898</amount>
       </bid>
     </history>
   </item>
