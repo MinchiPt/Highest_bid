@@ -38,10 +38,16 @@
         <amount>88899</amount>
       </bid>
       <bid>
-        <entry>234dsfdcf</entry>
+        <entry>234</entry>
         <bidder>uuu</bidder>
         <rep></rep>
         <amount>90000</amount>
+      </bid>
+      <bid>
+        <entry>777aaa</entry>
+        <bidder>nnn</bidder>
+        <rep></rep>
+        <amount>8999</amount>
       </bid>
     </history>
   </item>
@@ -71,7 +77,7 @@
         <amount>40000</amount>
       </bid>
       <bid>
-        <entry>234dsfdcf</entry>
+        <entry>234</entry>
         <bidder>uuu</bidder>
         <rep></rep>
         <amount>8677898</amount>
@@ -86,13 +92,13 @@
     </highest>
     <history>
       <bid>
-        <entry>234dsfdcf</entry>
+        <entry>234</entry>
         <bidder>uuu</bidder>
         <rep></rep>
         <amount>898945</amount>
       </bid>
       <bid>
-        <entry>234dsfdcf</entry>
+        <entry>234</entry>
         <bidder>uuu</bidder>
         <rep></rep>
         <amount>43455</amount>

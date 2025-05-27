@@ -567,6 +567,63 @@
             font-weight: bold;
         }
 
+        .bid-list-container {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            background: white;
+            position: relative;
+        }
+        
+        .bid-list {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            min-height: min-content;
+        }
+        
+        .list-header {
+            display: grid;
+            grid-template-columns: 100px 200px 200px 150px 120px;
+            gap: 20px;
+            padding: 14px 25px;
+            background-color: #f8f9fa;
+            font-weight: bold;
+            border: 1px solid #e0e0e0;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .list-item {
+            display: grid;
+            grid-template-columns: 100px 200px 200px 150px 120px;
+            gap: 20px;
+            padding: 12px 25px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        
+        /* Webkit browsers (Chrome, Safari) */
+        .bid-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .bid-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .bid-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .bid-list::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
         .list-item {
             display: grid;
             grid-template-columns: 100px 200px 200px 150px 120px;
@@ -917,15 +974,28 @@
             window.nextItemId = 1;
         }
         
-        // Update item dropdown when items are loaded
-        const observer = new MutationObserver(() => {
-            updateItemDropdown();
-            updateUIForLanguage(); // Update language for any new elements
-        });
-        observer.observe(document.getElementById('bidSections'), { childList: true, subtree: true });
+        // Store the last update time to prevent rapid updates
+        let lastDropdownUpdate = 0;
         
-        // Initialize UI
-        updateItemDropdown();
+        // Update item dropdown when items are loaded
+        const observer = new MutationObserver((mutations) => {
+            // Only update if we're not already updating and it's been at least 100ms since last update
+            const now = Date.now();
+            if (now - lastDropdownUpdate > 100) {
+                lastDropdownUpdate = now;
+                updateItemDropdown();
+                updateUIForLanguage(); // Update language for any new elements
+            }
+        });
+        
+        // Only observe direct child additions to bidSections
+        observer.observe(document.getElementById('bidSections'), { 
+            childList: true, 
+            subtree: false // Changed from true to false to reduce unnecessary updates
+        });
+        
+        // Initialize UI with a small delay to ensure DOM is ready
+        setTimeout(updateItemDropdown, 50);
         
         // Set up language switcher with event delegation
         document.addEventListener('change', function(e) {
@@ -1059,19 +1129,60 @@
         // Update item dropdown when items change
         function updateItemDropdown() {
             const select = document.getElementById('itemSelect');
-            const currentValue = select.value;
-            select.innerHTML = '<option value="">Select an item...</option>';
+            if (!select) return;
             
+            // Store current selection
+            const currentValue = select.value;
+            const currentSelectedIndex = select.selectedIndex;
+            
+            // Create a map of existing options for quick lookup
+            const existingOptions = new Map();
+            for (const option of select.options) {
+                if (option.value) { // Skip the default 'Select an item' option
+                    existingOptions.set(option.value, option);
+                }
+            }
+            
+            // Track which items we've processed
+            const processedItems = new Set();
+            
+            // Update or add items
             for (const [id, data] of Object.entries(bidsData)) {
-                const option = document.createElement('option');
-                option.value = id;
-                option.textContent = data.description || `Item ${id}`;
-                select.appendChild(option);
+                const option = existingOptions.get(id);
+                const description = data.description || `Item ${id}`;
+                
+                if (option) {
+                    // Update existing option if description changed
+                    if (option.textContent !== description) {
+                        option.textContent = description;
+                    }
+                } else {
+                    // Add new option
+                    const newOption = new Option(description, id);
+                    select.add(newOption, undefined);
+                }
+                processedItems.add(id);
+            }
+            
+            // Remove items that no longer exist in bidsData
+            for (let i = select.options.length - 1; i >= 0; i--) {
+                const option = select.options[i];
+                if (option.value && !processedItems.has(option.value)) {
+                    select.remove(i);
+                }
             }
             
             // Restore selection if possible
             if (currentValue && bidsData[currentValue]) {
                 select.value = currentValue;
+            } else if (select.options.length > 1) {
+                // Select the first non-default option if no valid selection
+                select.selectedIndex = 1;
+            }
+            
+            // If we have items but no selection, select the first item
+            if (select.options.length > 1 && select.selectedIndex === 0) {
+                select.selectedIndex = 1;
             }
         }
         
@@ -1349,6 +1460,9 @@
 
         // XML-related functions
         function updateDisplay() {
+            // Get the currently selected item before clearing
+            const selectedItem = document.querySelector('.bid-section.active')?.id?.replace('section-', '');
+            
             // Clear existing bid sections
             const bidSections = document.getElementById('bidSections');
             bidSections.innerHTML = '';
@@ -1359,7 +1473,9 @@
             sortedIds.forEach((itemId, index) => {
                 const item = bidsData[itemId];
                 const section = document.createElement('div');
-                section.className = 'bid-section' + (index === 0 ? ' active' : '');
+                // Set active class if this was the selected item, or if no selection and it's the first item
+                const isActive = (selectedItem && itemId === selectedItem) || (!selectedItem && index === 0);
+                section.className = 'bid-section' + (isActive ? ' active' : '');
                 section.id = `section-${itemId}`;
 
                 // Create item header
@@ -1402,22 +1518,22 @@
                 // Use current language for the header
                 historyContainer.innerHTML = `
                     <div class="list-title">${t.submittedBids}:</div>
-                    <div class="list-content">
-                        <div class="list-header">
-                            <div>${t.entry}</div>
-                            <div>${t.bidder}</div>
-                            <div>${t.representative}</div>
-                            <div>${t.amount}</div>
-                            <div>${t.actions}</div>
-                        </div>
+                    <div class="list-header">
+                        <div>${t.entry}</div>
+                        <div>${t.bidder}</div>
+                        <div>${t.representative}</div>
+                        <div>${t.amount}</div>
+                        <div>${t.actions}</div>
                     </div>
-                    <div class="bid-list" id="bid-list-${itemId}"></div>
                 `;
-
-                // Add bid history if it exists
+                // Create a container for the bid list that will be scrollable
+                const bidListContainer = document.createElement('div');
+                bidListContainer.className = 'bid-list-container';
+                
+                // Create the bid list
                 const bidList = document.createElement('div');
-                bidList.className = 'bid-list';
                 bidList.id = `bid-list-${itemId}`;
+                bidList.className = 'bid-list';
                 
                 if (item.history && item.history.length > 0) {
                     const sortedHistory = [...item.history].sort((a, b) => b.entry - a.entry);
@@ -1430,26 +1546,47 @@
                             <div class="list-rep">${bid.rep}</div>
                             <div class="list-amount">$${bid.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                             <div class="list-actions">
-                                <button class="bid-edit-btn" onclick="editBid('${itemId}', ${bid.entry})">Edit</button>
-                                <button class="bid-delete-btn" onclick="deleteBid('${itemId}', ${bid.entry})">Del</button>
+                                <button class="bid-edit-btn" data-item-id="${itemId}" data-entry="${bid.entry}">Edit</button>
+                                <button class="bid-delete-btn" data-item-id="${itemId}" data-entry="${bid.entry}">Del</button>
                             </div>
                         `;
                         bidList.appendChild(bidElement);
                     });
                 }
 
-                // Assemble the section
+                // Add all elements to the section
                 section.appendChild(header);
                 section.appendChild(highestBid);
                 section.appendChild(bidFormInfo);
-                historyContainer.querySelector('.list-content').appendChild(bidList);
+                historyContainer.appendChild(bidListContainer);
+                bidListContainer.appendChild(bidList);
                 section.appendChild(historyContainer);
                 
-                // Add click handler for the section
+                // Add click handler for the section and buttons
                 section.addEventListener('click', function (e) {
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                    const button = e.target.closest('button');
+                    
+                    // Handle edit button click
+                    if (button && button.classList.contains('bid-edit-btn')) {
+                        const itemId = button.getAttribute('data-item-id');
+                        const entry = button.getAttribute('data-entry');
+                        editBid(itemId, entry);
                         return;
                     }
+                    
+                    // Handle delete button click
+                    if (button && button.classList.contains('bid-delete-btn')) {
+                        const itemId = button.getAttribute('data-item-id');
+                        const entry = button.getAttribute('data-entry');
+                        deleteBid(itemId, entry);
+                        return;
+                    }
+                    
+                    // Handle section activation
+                    if (e.target.tagName === 'INPUT' || button) {
+                        return;
+                    }
+                    
                     document.querySelectorAll('.bid-section').forEach(s => s.classList.remove('active'));
                     this.classList.add('active');
                 });
@@ -1609,7 +1746,7 @@
                     </div>
                     <div>
                         <label for="editAmount" style="display: block; margin-bottom: 5px; font-weight: 500;">Amount ($): *</label>
-                        <input type="number" id="editAmount" value="${bid.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}" min="0.01" step="0.01" required inputmode="decimal" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; -moz-appearance: textfield;">
+                        <input type="number" id="editAmount" value="${bid.amount}" min="0.01" step="0.01" required inputmode="decimal" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; -moz-appearance: textfield;">
                     </div>
                 </div>
                 <div style="display: flex; justify-content: flex-end; gap: 10px;">
